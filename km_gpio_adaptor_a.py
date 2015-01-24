@@ -20,7 +20,8 @@ class Adaptor(CbAdaptor):
         self.inputs = KitchenMinderInputs()
         self.inputs.setupSwitch(self.switchPressed)
         self.inputs.setupPIR(self.movementDetected)
-        self.apps = Set()
+        self.apps =             {"binary_sensor": [],
+                                 "gpio": []}
         CbAdaptor.__init__(self, argv)
 
     def switchPressed(self, channel):
@@ -47,21 +48,39 @@ class Adaptor(CbAdaptor):
                 "data": e,
                 "timeStamp": time.time()
         }
-        [self.sendMessage(msg, app_id) for app_id in self.apps]
-
+        for a in self.apps["gpio"]:
+            self.sendMessage(msg, a)
+        if e == "movement":
+            msg = {"id": self.id,
+                   "content": "characteristic",
+                   "characteristic": "binary_sensor",
+                   "data": "on",
+                   "timeStamp": time.time()
+                  }
+            for a in self.apps["binary_sensor"]:
+                self.sendMessage(msg, a)
+    
     def onAppInit(self, message):
         logging.debug("%s %s %s onAppInit, req = %s", ModuleName, self.id, self.friendly_name, message)
         resp = {"name": self.name,
                 "id": self.id,
                 "status": "ok",
                 "service": [{"characteristic": "gpio"},
+                            {"characteristic": "binary_sensor", "type": "gpio"}
                         ],
                 "content": "service"}
         self.sendMessage(resp, message["id"])
         self.setState("running")
 
     def onAppRequest(self, message):
-        self.apps.add(message["id"])
+        # Switch off anything that already exists for this app
+        for a in self.apps:
+            if message["id"] in self.apps[a]:
+                self.apps[a].remove(message["id"])
+        # Now update details based on the message
+        for f in message["service"]:
+            if message["id"] not in self.apps[f["characteristic"]]:
+                self.apps[f["characteristic"]].append(message["id"])
 
     def onAppCommand(self, message):
         logging.debug("%s %s %s onAppCommand, req = %s", ModuleName, self.id, self.friendly_name, message)
