@@ -2,10 +2,10 @@
     "exe": "km_gpio_adaptor.py", 
     "protocol": "peripheral", 
     "name": "km_gpio_adaptor", 
-    "device_resource": "/api/bridge/v1/device/14/", 
-    "url": "https://github.com/ContinuumBridge/km_gpio_adaptor/archive/v1.1.1.tar.gz", 
-    "version": "1.1.1", 
+    "device_resource": "/api/bridge/v1/device/14", 
+    "url": "https://github.com/ContinuumBridge/km_gpio_adaptor/archive/v1.1.2.tar.gz", 
+    "version": "1.1.2", 
     "provider": "Afterthought Software", 
-    "adaptor_resource": "/api/bridge/v1/adaptor/9/", 
+    "adaptor_resource": "/api/bridge/v1/adaptor/9", 
     "description": "Adaptor for KM GPIO"
 }

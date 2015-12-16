@@ -4,7 +4,6 @@ ModuleName = "km_gpio_adaptor"
 import sys
 import time
 import os
-import logging
 from gpio import KitchenMinderInputs
 from sets import Set
 from cbcommslib import CbAdaptor
@@ -14,7 +13,6 @@ from twisted.internet import reactor
 
 class Adaptor(CbAdaptor):
     def __init__(self, argv):
-        logging.basicConfig(filename=CB_LOGFILE,level=CB_LOGGING_LEVEL,format='%(asctime)s %(message)s')
         self.status = "ok"
         self.state = "stopped"
         self.inputs = KitchenMinderInputs()
@@ -32,7 +30,7 @@ class Adaptor(CbAdaptor):
 
     def setState(self, state):
         self.state = state
-        logging.debug("%s %s state = %s", ModuleName, self.id, self.state)
+        self.cbLog("debug", "state = " +  self.state)
         msg = {"id": self.id,
                "status": "state",
                "state": self.state}
@@ -42,6 +40,7 @@ class Adaptor(CbAdaptor):
         self.inputs.cleanup()
 
     def sendEvent(self, e):
+        self.cbLog("debug", "sendEvent, event: " + str(e))
         msg = {"id": self.id,
                 "content": "characteristic",
                 "characteristic": "gpio",
@@ -61,7 +60,7 @@ class Adaptor(CbAdaptor):
                 self.sendMessage(msg, a)
     
     def onAppInit(self, message):
-        logging.debug("%s %s %s onAppInit, req = %s", ModuleName, self.id, self.friendly_name, message)
+        self.cbLog("debug", "onAppInit, req = " + str(message))
         resp = {"name": self.name,
                 "id": self.id,
                 "status": "ok",
@@ -83,14 +82,14 @@ class Adaptor(CbAdaptor):
                 self.apps[f["characteristic"]].append(message["id"])
 
     def onAppCommand(self, message):
-        logging.debug("%s %s %s onAppCommand, req = %s", ModuleName, self.id, self.friendly_name, message)
+        self.cbLog("debug", "onAppCommand, message = " + str(message))
 
     def onConfigureMessage(self, config):
         """Config is based on what apps are to be connected.
         May be called again if there is a new configuration, which
         could be because a new app has been added.
         """
-        logging.debug("%s onConfigureMessage, config: %s", ModuleName, config)
+        self.cbLog("debug", "onConfigureMessage, config: " + str(config))
         self.setState("starting")
 
 if __name__ == '__main__':
